@@ -526,8 +526,12 @@ const saveNow = () => {
     dirty = false;
   } catch { /* full or refused: the answers on screen are untouched */ }
 };
+// On a slow connection she may start typing before this script runs. With nothing saved, leave what is on screen alone and
+// save it; with a saved state, put it back.
+const saved = store ? read() : null;
 if (!store) kept.textContent = SAY.off;
-else if (fill(read())) kept.textContent = SAY.back;
+else if (saved) { if (fill(saved)) kept.textContent = SAY.back; }
+else if (fields().some((f) => f.value) || radios().some((r) => r.checked)) { dirty = true; saveNow(); }
 document.addEventListener("input", () => { dirty = true; clearTimeout(saveTimer); saveTimer = setTimeout(saveNow, 400); });
 document.addEventListener("change", () => { dirty = true; saveNow(); });
 addEventListener("pagehide", saveNow);
